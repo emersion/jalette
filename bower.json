@@ -1,0 +1,32 @@
+{
+  "name": "jalette",
+  "version": "0.1",
+  "homepage": "https://github.com/emersion/jalette",
+  "authors": [
+    "Emersion <contact@emersion.fr>"
+  ],
+  "description": "A step-by-step palette generator written in Javascript",
+  "main": "src/jalette.js",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "palette",
+    "generator",
+    "colors",
+    "color",
+    "set",
+    "lab",
+    "cielab"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

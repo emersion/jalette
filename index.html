@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Jalette</title>
+
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css">
+</head>
+<body>
+	<div class="container">
+		<h1>Jalette<small> - palette generation made easy</small></h1>
+
+		<div id="colors-row"></div>
+
+
+		<form class="form-horizontal">
+			<div class="form-group">
+				<label for="palette-n" class="col-sm-3 control-label">Generate a new palette</label>
+				<div class="col-sm-2">
+					<input type="number" id="palette-n" class="form-control" value="7">
+				</div>
+				<div class="col-sm-7">
+					<button type="button" id="palette-submit" class="btn btn-default">Generate</button>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">Generate a new color for this palette</label>
+				<div class="col-sm-2">
+					<button type="button" id="color-submit" class="btn btn-primary">Generate</button>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<script src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js"></script>
+	<script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	<script src="src/jalette.js"></script>
+	<script>
+		var $colors = $('#colors-row');
+
+		function appendColor(color) {
+			$colors.append(
+				$('<div></div>').css({
+					display: 'inline-block',
+					width: 50,
+					height: 50,
+					backgroundColor: color.toRgb().toRoundedString()
+				})
+			);
+		}
+
+		var palette = [];
+		function generate(n) {
+			$colors.empty();
+
+			var colors = jalette.generate(n);
+
+			for (var i = 0; i < colors.length; i++) {
+				appendColor(colors[i]);
+			}
+
+			palette = colors;
+			return colors;
+		}
+
+		function generateColor() {
+			var color = jalette.generateColor(palette);
+
+			appendColor(color);
+			palette.push(color);
+		}
+
+		$('#palette-submit').click(function () {
+			var n = parseInt($('#palette-n').val());
+			generate(n);
+		});
+		$('#color-submit').click(function () {
+			generateColor();
+		});
+	</script>
+</body>
+</html>
