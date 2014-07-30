@@ -62,9 +62,6 @@
 			return this;
 		},
 		toString: function () {
-			return 'rgb('+this.r+','+this.g+','+this.b+')';
-		},
-		toRoundedString: function () {
 			var rounded = [Math.round(this.r),Math.round(this.g),Math.round(this.b)];
 			return 'rgb('+rounded.join(',')+')';
 		},
@@ -74,7 +71,7 @@
 		toHex: function () {
 			function componentToHex(c) {
 				var hex = c.toString(16);
-				return (hex.length == 1) ? '0' + hex : hex;
+				return (hex.length == 1) ? '0' + hex : String(hex);
 			}
 
 			return '#' + componentToHex(this.r) + componentToHex(this.g) + componentToHex(this.b);
@@ -461,7 +458,7 @@
 					continue;
 				}
 
-				ctx.fillStyle = rgb.toRoundedString();
+				ctx.fillStyle = rgb.toString();
 				ctx.fillRect(x(i), y(j), 1, 1);
 			}
 		}
@@ -516,7 +513,7 @@
 						continue;
 					}
 					/*var rgb = lab.toRgb();
-					ctx.fillStyle = 'rgb('+[Math.round(rgb.r),Math.round(rgb.g),Math.round(rgb.b)].join(',')+')';
+					ctx.fillStyle = rgb.toString();
 					ctx.fillRect(x(xi) - regionRadius/2, y(yj) - regionRadius/2, regionRadius, regionRadius);*/
 
 					var smallestColorDst = -1;
@@ -543,7 +540,6 @@
 			}
 		}
 
-		//window.open(canvas.toDataURL());
 		return greatestColor;
 	}
 

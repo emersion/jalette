@@ -99,7 +99,7 @@
 					}
 
 					//var rgb = lab.toRgb();
-					//ctx.fillStyle = rgb.toRoundedString();
+					//ctx.fillStyle = rgb.toString();
 					ctx.fillStyle = 'blue';
 					ctx.fillRect(x(lab.a) - 2, y(lab.b) - 2, 5, 5);
 				}
@@ -110,12 +110,12 @@
 				ctx.fillStyle = 'red';
 				ctx.fillRect(x(color.a) - 2, y(color.b) - 2, 5, 5);
 
-				ctx.fillStyle = rgb.toRoundedString();
+				ctx.fillStyle = rgb.toString();
 				ctx.fillRect(3, 3, 50, 50);
 
 				ctx.fillStyle = 'black';
 				//ctx.fillText('min dE='+greatestDst, 3, 63);
-				ctx.fillText(rgb.toRoundedString(), 3, 83);
+				ctx.fillText(rgb.toString(), 3, 83);
 				ctx.fillText(labStr, 3, 103);
 
 				$canvas = $(canvas).hide();
@@ -127,7 +127,7 @@
 					display: 'inline-block',
 					width: 50,
 					height: 50,
-					backgroundColor: rgb.toRoundedString(),
+					backgroundColor: rgb.toString(),
 					cursor: 'pointer'
 				}).attr('title', 'Click to remove').click(function () {
 					palette.splice(paletteLength - 1, 1);
