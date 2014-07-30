@@ -576,11 +576,8 @@
 		}
 
 		// Plot points
-		//var pts = [];
 		for (var i = 0; i < colors.length; i++) {
 			var lab = colors[i];
-
-			//pts.push([lab.a, lab.b]); // Ignore L for the moment
 
 			//var rgb = lab.toRgb();
 			//ctx.fillStyle = 'rgb('+[Math.round(rgb.r),Math.round(rgb.g),Math.round(rgb.b)].join(',')+')';
