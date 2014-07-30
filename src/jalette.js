@@ -43,9 +43,9 @@
 			if (typeof input['to'+colorName] == 'function') {
 				return input['to'+colorName]();
 			} else if (typeof input.toRgb == 'function' &&
-				typeof jalette.Rgb.prototype['to'+colorName] == 'function') {
+				typeof jalette[colorName].fromRgb == 'function') {
 				var rgb = input.toRgb();
-				return rgb['to'+colorName]();
+				return jalette[colorName].fromRgb(rgb);
 			}
 		} else if (typeof input == 'string') {
 			return fromString(colorName, input);
@@ -58,12 +58,26 @@
 		this.b = b || 0;
 	};
 	jalette.Rgb.prototype = {
+		toRgb: function () {
+			return this;
+		},
 		toString: function () {
 			return 'rgb('+this.r+','+this.g+','+this.b+')';
 		},
 		toRoundedString: function () {
 			var rounded = [Math.round(this.r),Math.round(this.g),Math.round(this.b)];
 			return 'rgb('+rounded.join(',')+')';
+		},
+		/**
+		 * @see https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+		 */
+		toHex: function () {
+			function componentToHex(c) {
+				var hex = c.toString(16);
+				return (hex.length == 1) ? '0' + hex : hex;
+			}
+
+			return '#' + componentToHex(this.r) + componentToHex(this.g) + componentToHex(this.b);
 		},
 		isValid: function () {
 			return (this.r>=0 && this.g>=0 && this.b>=0 && this.r<256 && this.g<256 && this.b<256);
@@ -79,6 +93,20 @@
 			this.g = toRgb(this.g);
 			this.b = toRgb(this.b);
 			return this;
+		}
+	};
+	/**
+	 * @see https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+	 */
+	jalette.Rgb.fromHex = function (hex) {
+		var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		
+		if (result) {
+			return new jalette.Rgb(
+				parseInt(result[1], 16),
+				parseInt(result[2], 16),
+				parseInt(result[3], 16)
+			);
 		}
 	};
 

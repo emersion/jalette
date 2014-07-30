@@ -17,17 +17,22 @@
 			<div class="form-group">
 				<label for="palette-n" class="col-sm-3 control-label">Generate a new palette</label>
 				<div class="col-sm-2">
-					<input type="number" id="palette-n" class="form-control" value="7">
+					<input type="number" id="palette-n" class="form-control" placeholder="Number of colors">
 				</div>
-				<div class="col-sm-7">
-					<button type="button" id="palette-submit" class="btn btn-default">Generate</button>
-				</div>
+				<button type="button" id="palette-submit" class="btn btn-default">Generate</button>
 			</div>
 			<div class="form-group">
 				<label class="col-sm-3 control-label">Generate a new color for this palette</label>
 				<div class="col-sm-2">
 					<button type="button" id="color-submit" class="btn btn-primary">Generate</button>
 				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">Add a custom color</label>
+				<div class="col-sm-1">
+					<input type="color" id="custom-color" class="form-control" placeholder="#000000">
+				</div>
+				<button type="button" id="custom-submit" class="btn btn-default">Add</button>
 			</div>
 		</form>
 	</div>
@@ -37,21 +42,29 @@
 	<script src="src/jalette.js"></script>
 	<script>
 		var $colors = $('#colors-row');
+		var palette = [];
 
 		function appendColor(color) {
+			var paletteLength = palette.push(color);
+
 			$colors.append(
 				$('<div></div>').css({
 					display: 'inline-block',
 					width: 50,
 					height: 50,
-					backgroundColor: color.toRgb().toRoundedString()
+					backgroundColor: color.toRgb().toRoundedString(),
+					cursor: 'pointer'
+				}).attr('title', 'Click to remove').click(function () {
+					palette.splice(paletteLength - 1, 1);
+					$(this).remove();
+					console.log(paletteLength, palette);
 				})
 			);
 		}
 
-		var palette = [];
 		function generate(n) {
 			$colors.empty();
+			palette = [];
 
 			var colors = jalette.generate(n);
 
@@ -59,7 +72,6 @@
 				appendColor(colors[i]);
 			}
 
-			palette = colors;
 			return colors;
 		}
 
@@ -67,7 +79,6 @@
 			var color = jalette.generateColor(palette);
 
 			appendColor(color);
-			palette.push(color);
 		}
 
 		$('#palette-submit').click(function () {
@@ -76,6 +87,10 @@
 		});
 		$('#color-submit').click(function () {
 			generateColor();
+		});
+		$('#custom-submit').click(function () {
+			var color = $('#custom-color').val();
+			appendColor(jalette.Rgb.fromHex(color));
 		});
 	</script>
 </body>
