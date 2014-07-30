@@ -484,24 +484,6 @@
 			}
 		}
 
-		// Draw points on a graph
-		var canvas = document.createElement('canvas');
-		canvas.width = 600;
-		canvas.height = 600;
-		var ctx = canvas.getContext('2d');
-
-		drawGrid(canvas);
-
-		function x(x) {
-			return x + canvas.width/2;
-		}
-		function y(y) {
-			return - y + canvas.height/2;
-		}
-
-		// Draw background
-		//jalette.Lab.drawSpaceForL(canvas, 50);
-
 		var domainRadius = 128,
 			regionsPerRow = 64,
 			regionRadius = domainRadius*2 / regionsPerRow;
@@ -537,20 +519,6 @@
 					ctx.fillStyle = 'rgb('+[Math.round(rgb.r),Math.round(rgb.g),Math.round(rgb.b)].join(',')+')';
 					ctx.fillRect(x(xi) - regionRadius/2, y(yj) - regionRadius/2, regionRadius, regionRadius);*/
 
-					/*var dstSum = 0;
-					for (var k = 0; k < colors.length; k++) {
-						var color = colors[k],
-							dst = jalette.Lab.CIEDE2000(lab, color);
-
-						dstSum += dst;
-					}
-					var dstAvg = dstSum / colors.length;
-
-					if (greatestDst < dstAvg) {
-						greatestDst = dstAvg;
-						greatestColor = lab;
-					}*/
-
 					var smallestColorDst = -1;
 					for (var k = 0; k < colors.length; k++) {
 						var color = colors[k],
@@ -575,42 +543,15 @@
 			}
 		}
 
-		// Plot points
-		for (var i = 0; i < colors.length; i++) {
-			var lab = colors[i];
-
-			//var rgb = lab.toRgb();
-			//ctx.fillStyle = 'rgb('+[Math.round(rgb.r),Math.round(rgb.g),Math.round(rgb.b)].join(',')+')';
-			ctx.fillStyle = 'rgba(0,0,255,'+(dstToCenter(lab)/domainRadius)+')';
-			ctx.fillRect(x(lab.a) - 2, y(lab.b) - 2, 5, 5);
-		}
-
-		// Print selected color
-		var labStr = 'lab('+[Math.round(greatestColor.l),Math.round(greatestColor.a),Math.round(greatestColor.b)].join(',')+')';
-		var rgb = greatestColor.toRgb();
-		var rgbStr = rgb.toRoundedString();
-
-		ctx.fillStyle = 'red';
-		ctx.fillRect(x(greatestColor.a) - 2, y(greatestColor.b) - 2, 5, 5);
-
-		ctx.fillStyle = rgbStr;
-		ctx.fillRect(3, 3, 50, 50);
-
-		ctx.fillStyle = 'black';
-		ctx.fillText('min dE='+greatestDst, 3, 63);
-		ctx.fillText(rgbStr, 3, 83);
-		ctx.fillText(labStr, 3, 103);
-
 		//window.open(canvas.toDataURL());
 		return greatestColor;
 	}
-//jalette.generateColor();
 
 	jalette.generate = function (n) {
-		var canvas = document.createElement('canvas');
+		/*var canvas = document.createElement('canvas');
 		canvas.width = n * 20;
 		canvas.height = 20;
-		var ctx = canvas.getContext('2d');
+		var ctx = canvas.getContext('2d');*/
 
 		var used = [];
 		for (var i = 0; i < n; i++) {
@@ -625,18 +566,16 @@
 
 			used.push(lab);
 
-			var rgb = lab.toRgb();
+			/*var rgb = lab.toRgb();
 			var rgbStr = 'rgb('+[Math.round(rgb.r),Math.round(rgb.g),Math.round(rgb.b)].join(',')+')';
 
 			ctx.fillStyle = rgbStr;
-			ctx.fillRect(i * 20, 0, 20, 20);
+			ctx.fillRect(i * 20, 0, 20, 20);*/
 		}
-		console.log(used);
 		//window.open(canvas.toDataURL());
-		
+
 		return used;
 	}
-//jalette.generate(30);
 
 	if (typeof define === 'function' && define.amd) {
 		define('jalette', [], function() {

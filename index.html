@@ -36,15 +36,12 @@
 							<input type="color" id="custom-color" class="form-control" placeholder="#000000">
 						</div>
 						<button type="button" id="custom-submit" class="btn btn-default">Add</button>
+						<button type="button" id="black-n-white-submit" class="btn btn-default">Add black &amp; white</button>
 					</div>
 				</form>
-			</div>
-		</div>
 
-		<div id="palette-steps" class="panel panel-default">
-			<div class="panel-body">
-				<h2>Palette steps</h2>
-				<small>Coming soon...</small>
+				<div id="palette-steps-list"></div>
+				<small class="text-muted">Hover a color to show its step...</small>
 			</div>
 		</div>
 
@@ -61,23 +58,85 @@
 	<script src="//cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 	<script src="src/jalette.js"></script>
 	<script>
-		var $colors = $('#colors-row');
+		var $colors = $('#colors-row'),
+			$paletteSteps = $('#palette-steps-list');
 		var palette = [];
+
+		function drawGrid(canvas) {
+			var ctx = canvas.getContext('2d');
+
+			ctx.fillStyle = 'rgb(200,200,200)';
+			ctx.fillRect(canvas.width/2, 0, 1, canvas.height);
+			ctx.fillRect(0, canvas.height/2, canvas.width, 1);
+		}
 
 		function appendColor(color) {
 			var paletteLength = palette.push(color);
+			var rgb = color.toRgb();
+
+			// Draw a graph
+			var $canvas = $();
+			if (color instanceof jalette.Lab) {
+				var canvas = document.createElement('canvas');
+				canvas.width = 600;
+				canvas.height = 600;
+				var ctx = canvas.getContext('2d');
+
+				drawGrid(canvas);
+
+				function x(x) {
+					return x + canvas.width/2;
+				}
+				function y(y) {
+					return - y + canvas.height/2;
+				}
+
+				// Plot points
+				for (var i = 0; i < palette.length; i++) {
+					var lab = palette[i];
+					if (!(lab instanceof jalette.Lab)) {
+						continue;
+					}
+
+					//var rgb = lab.toRgb();
+					//ctx.fillStyle = rgb.toRoundedString();
+					ctx.fillStyle = 'blue';
+					ctx.fillRect(x(lab.a) - 2, y(lab.b) - 2, 5, 5);
+				}
+
+				// Print selected color
+				var labStr = 'lab('+[Math.round(color.l),Math.round(color.a),Math.round(color.b)].join(',')+')';
+
+				ctx.fillStyle = 'red';
+				ctx.fillRect(x(color.a) - 2, y(color.b) - 2, 5, 5);
+
+				ctx.fillStyle = rgb.toRoundedString();
+				ctx.fillRect(3, 3, 50, 50);
+
+				ctx.fillStyle = 'black';
+				//ctx.fillText('min dE='+greatestDst, 3, 63);
+				ctx.fillText(rgb.toRoundedString(), 3, 83);
+				ctx.fillText(labStr, 3, 103);
+
+				$canvas = $(canvas).hide();
+				$paletteSteps.append($canvas);
+			}
 
 			$colors.append(
 				$('<div></div>').css({
 					display: 'inline-block',
 					width: 50,
 					height: 50,
-					backgroundColor: color.toRgb().toRoundedString(),
+					backgroundColor: rgb.toRoundedString(),
 					cursor: 'pointer'
 				}).attr('title', 'Click to remove').click(function () {
 					palette.splice(paletteLength - 1, 1);
 					$(this).remove();
-					console.log(paletteLength, palette);
+					$canvas.remove();
+				}).hover(function () {
+					$canvas.show();
+				}, function () {
+					$canvas.hide();
 				})
 			);
 		}
@@ -110,14 +169,10 @@
 			var color = $('#custom-color').val();
 			appendColor(jalette.Rgb.fromHex(color));
 		});
-
-		function drawGrid(canvas) {
-			var ctx = canvas.getContext('2d');
-
-			ctx.fillStyle = 'rgb(200,200,200)';
-			ctx.fillRect(canvas.width/2, 0, 1, canvas.height);
-			ctx.fillRect(0, canvas.height/2, canvas.width, 1);
-		}
+		$('#black-n-white-submit').click(function () {
+			appendColor(new jalette.Rgb(0, 0, 0));
+			appendColor(new jalette.Rgb(255, 255, 255));
+		});
 
 		var $labSpaceCanvas = $('#lab-space-canvas'),
 			labSpaceCtx = $labSpaceCanvas[0].getContext('2d');
