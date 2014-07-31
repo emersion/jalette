@@ -25,7 +25,7 @@ Available classes:
   * `toRgb()`: converts the color to RGB
 * `new jalette.Xyz(x, y, z)`: an XYZ color
   * `toRgb()`: converts the color to RGB
-* `new jalette.Lab(;, a, b)`: an LAB color
+* `new jalette.Lab(l, a, b)`: a LAB color
   * `toRgb()`: converts the color to RGB
 
 Static methods:
