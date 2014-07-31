@@ -1,7 +1,15 @@
 (function () {
 	var root = this;
 
+	/**
+	 * Jalette, a step-by-step palette generator written in Javascript.
+	 * @author emersion <contact@emersion.fr>
+	 * @license https://github.com/emersion/jalette/raw/master/LICENSE The MIT license
+	 * @version 0.1
+	 */
 	var jalette = {};
+
+	// Export Jalette
 	if (typeof exports !== 'undefined') {
 		if (typeof module !== 'undefined' && module.exports) {
 			exports = module.exports = jalette;
@@ -11,7 +19,13 @@
 		root.jalette = jalette;
 	}
 
-	function fromArray(colorName, args) {
+	/**
+	 * Create a color from an array of values.
+	 * @param  {String} colorName The color name.
+	 * @param  {Array}  args      Arguments to pass to the color constructor.
+	 * @return {jalette.Color}    A Jalette color.
+	 */
+	function fromValues(colorName, args) {
 		args = args || [];
 
 		var color = new jalette[colorName]();
@@ -19,27 +33,41 @@
 
 		return color;
 	}
-	function fromString(colorName, str) {
-		var color = new jalette[colorName]();
-
+	/**
+	 * Create a color from a string.
+	 * @param  {String} colorName The color name.
+	 * @param  {String} str       The string.
+	 * @return {Object}           The color.
+	 */
+	function fromStringValues(colorName, str) {
 		if (str) {
 			var args = str.split(',');
 			for (var i = 0; i < args.length; i++) {
 				args[i] = parseFloat(args[i]);
 			}
 
-			jalette[colorName].apply(color, args);
+			return fromValues(colorName, args);
 		}
-		
-		return color;
+
+		return new jalette[colorName]();
 	}
 
+	/**
+	 * A list of available color spaces.
+	 * @type {Array}
+	 */
 	jalette.colorSpaces = ['Rgb', 'Hsl', 'Hsv', 'Hsb', 'Xyz', 'Lab'];
 
+	/**
+	 * Convert an input to a specified color.
+	 * @param  {String}              colorName The color name.
+	 * @param  {Array|Object|String} input     The input.
+	 * @return {Object}                        The color.
+	 */
 	jalette.to = function (colorName, input) {
 		if (input && input instanceof Array) {
-			return fromArray(colorName, input);
-		} else if (typeof input == 'object') {
+			return fromValues(colorName, input);
+		} else if (input && typeof input == 'object') {
 			if (typeof input['to'+colorName] == 'function') {
 				return input['to'+colorName]();
 			} else if (typeof input.toRgb == 'function' &&
@@ -48,37 +76,94 @@
 				return jalette[colorName].fromRgb(rgb);
 			}
 		} else if (typeof input == 'string') {
-			return fromString(colorName, input);
+			return fromStringValues(colorName, input);
 		}
 	};
 
+	/**
+	 * Convert an input to a color.
+	 * @param  {Object|String} input The input.
+	 * @return {Object}              The color.
+	 */
+	jalette.from = function (input) {
+		if (input && typeof input == 'object') {
+			return input;
+		} else if (typeof input == 'string') {
+			if (input[0] == '#') { // Hex color
+				return jalette.Rgb.fromHex(input);
+			} else { // Something like `rgb(56, 42, 107)`
+				input = input.trim();
+				var result = /^([a-zA-Z]+)\(([0-9,;\s]+)\)$/.exec(input);
+				if (result) {
+					var colorName = result[1].toLowerCase(), colorValues = result[2];
+
+					for (var i = 0; i < jalette.colorSpaces.length; i++) {
+						var name = jalette.colorSpaces[i];
+
+						if (name.toLowerCase() == colorName) {
+							return fromStringValues(name, colorValues);
+						}
+					}
+				}
+			}
+		}
+	};
+
+	/**
+	 * A RGB color. Values are between 0 and 255.
+	 * @param {Number} r The red value.
+	 * @param {Number} g The green value.
+	 * @param {Number} b The blue value.
+	 */
 	jalette.Rgb = function (r, g, b) {
 		this.r = r || 0;
 		this.g = g || 0;
 		this.b = b || 0;
 	};
 	jalette.Rgb.prototype = {
+		/**
+		 * Convert this color to RGB.
+		 * This seems not very useful since this is already an RGB color,
+		 * but can help when you don't know if you have an RGB color and you want one.
+		 * @return {jalette.Rgb} The RGB color.
+		 */
 		toRgb: function () {
 			return this;
 		},
+		/**
+		 * Convert this color to a string.
+		 * Can be used in CSS for example.
+		 * @return {String} The color string.
+		 */
 		toString: function () {
 			var rounded = [Math.round(this.r),Math.round(this.g),Math.round(this.b)];
 			return 'rgb('+rounded.join(',')+')';
 		},
 		/**
+		 * Convert this color to an hexadecimal value (e.g. `#ffffff`).
+		 * @return {String} The hex color.
 		 * @see https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 		 */
 		toHex: function () {
-			function componentToHex(c) {
+			function toHex(c) {
 				var hex = c.toString(16);
-				return (hex.length == 1) ? '0' + hex : String(hex);
+				return (hex.length == 1) ? '0' + hex : hex;
 			}
 
-			return '#' + componentToHex(this.r) + componentToHex(this.g) + componentToHex(this.b);
+			return '#' + toHex(this.r) + toHex(this.g) + toHex(this.b);
 		},
+		/**
+		 * Check if this RGB color is a valid one (values between 0 and 255).
+		 * @return {Boolean} True if it is, false otherwise.
+		 */
 		isValid: function () {
 			return (this.r>=0 && this.g>=0 && this.b>=0 && this.r<256 && this.g<256 && this.b<256);
 		},
+		/**
+		 * Convert this color to a valid RGB color, if it's invalid.
+		 * @return {jalette.Rgb} The valid RGB color.
+		 * @see {isValid()}
+		 */
 		toValid: function () {
 			function toRgb(n) {
 				if (n < 0) return 0;
@@ -86,11 +171,16 @@
 				return n;
 			}
 
-			this.r = toRgb(this.r);
-			this.g = toRgb(this.g);
-			this.b = toRgb(this.b);
-			return this;
+			return new jalette.Rgb(
+				toRgb(this.r),
+				toRgb(this.g),
+				toRgb(this.b)
+			);
 		},
+		/**
+		 * Get this color's complementary.
+		 * @return {jalette.Rgb} The complementary RGB color.
+		 */
 		complementary: function () {
 			return new jalette.Rgb(
 				255 - this.r,
@@ -100,6 +190,9 @@
 		}
 	};
 	/**
+	 * Convert an hexadecimal value to an RGB color.
+	 * @param {String} hex The hex value.
+	 * @return {jalette.Rgb} The RGB color.
 	 * @see https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 	 */
 	jalette.Rgb.fromHex = function (hex) {
@@ -116,7 +209,11 @@
 
 	/**
 	 * An HSL color.
+	 * @param {Number} h The hue (between 0 and 360).
+	 * @param {Number} s The saturation (between 0 and 1).
+	 * @param {Number} l The luminance (between 0 and 1).
 	 * @see https://en.wikipedia.org/wiki/HSL_and_HSV
+	 * @see http://codeitdown.com/hsl-hsb-hsv-color/
 	 */
 	jalette.Hsl = function (h, s, l) {
 		this.h = h || 0;
@@ -124,16 +221,28 @@
 		this.l = l || 0;
 	};
 	jalette.Hsl.prototype = {
+		/**
+		 * Convert this color to a string.
+		 * Can be used in CSS for example.
+		 * @return {String} The color string.
+		 */
 		toString: function () {
 			var cssVals = [
-				this.h,
-				this.s*100 + '%',
-				this.l*100 + '%'
+				Math.round(this.h),
+				Math.round(this.s*100) + '%',
+				Math.round(this.l*100) + '%'
 			];
 			return 'hsl('+cssVals.join(',')+')';
 		}
 	};
 
+	/**
+	 * An HSV color.
+	 * @param {Number} h The hue (between 0 and 360).
+	 * @param {Number} s The saturation (between 0 and 1).
+	 * @param {Number} v The value (between 0 and 1).
+	 * @see http://codeitdown.com/hsl-hsb-hsv-color/
+	 */
 	jalette.Hsv = function (h, s, v) {
 		this.h = h || 0;
 		this.s = s || 0;
@@ -157,6 +266,8 @@
 			return hsl;
 		},
 		/**
+		 * Convert this HSV color to RGB.
+		 * @return {jalette.Rgb} The RGB color.
 		 * @see https://github.com/THEjoezack/ColorMine/blob/master/ColorMine/ColorSpaces/Conversions/HsvConverter.cs
 		 */
 		toRgb: function () {
@@ -184,12 +295,14 @@
 			}
 			return new jalette.Rgb(v, p, q);
 		},
+		/**
+		 * Convert this color to a string.
+		 * Can be used in CSS for example.
+		 * @return {String} The color string.
+		 */
 		toString: function () {
 			return this.toHsl().toString();
 		}
-	};
-	jalette.Hsv.fromString = function (str) {
-		return fromString('Hsv', str);
 	};
 
 	/**
@@ -197,30 +310,27 @@
 	 * The B in HSB stands for Brightness and the V in HSV for Value,
 	 * which are exactly the same: the perception of the ammount of
 	 * light or power of the source.
+	 * @param {Number} h The hue (between 0 and 360).
+	 * @param {Number} s The saturation (between 0 and 1).
+	 * @param {Number} b The brightness (between 0 and 1), which is the same as V in HSV.
+	 * @see http://codeitdown.com/hsl-hsb-hsv-color/
 	 */
 	jalette.Hsb = function (h, s, b) {
 		this.h = h || 0;
 		this.s = s || 0;
 		this.b = b || 0;
 
-		this.v = b || 0;
+		this.v = b || 0; // Populate v too so as to make HSV methods work on this object too
 	};
 	jalette.Hsb.prototype = jalette.Hsv.prototype;
-	/*jalette.Hsb.fromString = function (str) {
-		var hsb = new jalette.Hsb();
-
-		if (!str) {
-			return hsb;
-		}
-
-		var rawVals = str.split(',');
-		hsb.h = parseFloat(rawVals[0]);
-		hsb.s = parseFloat(rawVals[1]);
-		hsb.b = parseFloat(rawVals[2]);
-		return hsb;
-	};*/
 
 	/**
+	 * An XYZ color.
+	 * The XYZ tristimulus values are thus analogous to, but not equal to, the LMS cone responses of the human eye.
+	 * @param {Number} x The X value.
+	 * @param {Number} y The Y value.
+	 * @param {Number} z The Z value.
+	 * @see https://en.wikipedia.org/wiki/XYZ_color
 	 * @see https://github.com/THEjoezack/ColorMine/blob/master/ColorMine/ColorSpaces/Conversions/XyzConverter.cs
 	 */
 	jalette.Xyz = function (x, y, z) {
@@ -229,6 +339,10 @@
 		this.z = z || 0;
 	};
 	jalette.Xyz.prototype = {
+		/**
+		 * Convert this color to RGB.
+		 * @return {jalette.Rgb} The RGB color.
+		 */
 		toRgb: function () {
 			// (Observer = 2°, Illuminant = D65)
 			var x = this.x / 100.0;
@@ -245,17 +359,34 @@
 
 			return new jalette.Rgb(r * 255, g * 255, b * 255);
 		},
+		/**
+		 * Check if this color would be a valid RGB one.
+		 * @return {Boolean} True if it is, false otherwise.
+		 */
 		isValidRgb: function () {
 			return this.toRgb().isValid();
 		},
+		/**
+		 * Convert this color to a valid RGB one.
+		 * @return {jalette.Rgb} The valid RGB color.
+		 */
 		toValidRgb: function () {
 			return this.toRgb().toValid();
 		}
 	};
 	// Constants for Xyz related spaces
+	/**
+	 * The white reference in the XYZ space.
+	 * @type {jalette.Xyz}
+	 */
 	jalette.Xyz.whiteReference = new jalette.Xyz(95.047, 100.000, 108.883); // TODO: Hard-coded!
 	jalette.Xyz.epsilon = 0.008856; // Intent is 216/24389
 	jalette.Xyz.kappa = 903.3; // Intent is 24389/27
+	/**
+	 * Convert an RGB color to an XYZ one.
+	 * @param  {jalette.RGB} rgb The RGB color.
+	 * @return {jalette.Xyz}     The XYZ color.
+	 */
 	jalette.Xyz.fromRgb = function (rgb) {
 		function pivotRgb(n) {
 			return ((n > 0.04045) ? Math.pow((n + 0.055) / 1.055, 2.4) : n / 12.92) * 100.0;
@@ -288,6 +419,10 @@
 		this.b = b || 0;
 	};
 	jalette.Lab.prototype = {
+		/**
+		 * Convert this color to XYZ.
+		 * @return {jalette.Xyz} The XYZ color.
+		 */
 		toXyz: function () {
 			var lab = this;
 
@@ -306,13 +441,27 @@
 
 			return xyz;
 		},
+		/**
+		 * Convert this color to RGB.
+		 * Note that this color is firstly converted to XYZ and then to RGB.
+		 * @return {jalette.Rgb} The RGB color.
+		 */
 		toRgb: function () {
 			return this.toXyz().toRgb();
 		},
+		/**
+		 * Check if this color would be a valid RGB one.
+		 * @return {Boolean} True if it is, false otherwise.
+		 */
 		isValidRgb: function () {
 			return this.toXyz().isValidRgb();
 		}
 	};
+	/**
+	 * Convert an RGB color to LAB.
+	 * @param  {jalette.Rgb} rgb The RGB color.
+	 * @return {jalette.Lab}     The LAB color.
+	 */
 	jalette.Lab.fromRgb = function (rgb) {
 		function cubicRoot(n) {
 			return Math.pow(n, 1.0 / 3.0);
@@ -334,8 +483,19 @@
 		lab.b = 200 * (y - z);
 		return lab;
 	};
+
 	/**
-	 * @see http://en.wikipedia.org/wiki/Color_difference
+	 * Compute the distance between two colors (delta E) with the CIE76 formula.
+	 * @see http://en.wikipedia.org/wiki/Color_difference#CIE76
+	 */
+	jalette.Lab.CIE76 = function (a, b) {
+		return Math.sqrt(Math.pow(a.l - b.l, 2) +
+			Math.pow(a.a - b.a, 2) +
+			Math.pow(a.b - b.b, 2));
+	};
+	/**
+	 * Compute the distance between two colors (delta E) with the CIEDE2000 formula.
+	 * @see http://en.wikipedia.org/wiki/Color_difference#CIEDE2000
 	 * @see https://github.com/THEjoezack/ColorMine/blob/master/ColorMine/ColorSpaces/Comparisons/CieDe2000Comparison.cs
 	 */
 	jalette.Lab.CIEDE2000 = function (lab1, lab2) {
@@ -446,6 +606,11 @@
 
 		return CIEDE2000;
 	};
+	/**
+	 * Draw the CIELAB color space, given an L value.
+	 * @param  {HTMLCanvasElement} canvas The canvas in which the color space will be rendered.
+	 * @param  {Number}            L      The L value.
+	 */
 	jalette.Lab.drawSpaceForL = function (canvas, L) {
 		var ctx = canvas.getContext('2d');
 
@@ -471,14 +636,13 @@
 		}
 	};
 
-	function drawGrid(canvas) {
-		var ctx = canvas.getContext('2d');
-
-		ctx.fillStyle = 'rgb(200,200,200)';
-		ctx.fillRect(canvas.width/2, 0, 1, canvas.height);
-		ctx.fillRect(0, canvas.height/2, canvas.width, 1);
-	}
+	/**
+	 * Generate a new color for an existing palette.
+	 * @param  {Array} colors An array of colors composing the current palette.
+	 * @return {jalette.Lab}  The newly generated color.
+	 */
 	jalette.generateColor = function (colors) {
+		// Make sure all colors are in LAB
 		colors = colors || [];
 		for (var i = 0; i < colors.length; i++) {
 			var color = colors[i];
@@ -493,12 +657,13 @@
 			regionRadius = domainRadius*2 / regionsPerRow;
 
 		function dstBetween(a, b) {
-			var lFactor = domainRadius / 100 * 2; // L is between 0 and 100
+			/*var lFactor = domainRadius / 100 * 2; // L is between 0 and 100
 			var dst = Math.sqrt(Math.pow((a.l - b.l)*lFactor, 2) +
 				Math.pow(a.a - b.a, 2) +
 				Math.pow(a.b - b.b, 2));
 
-			return dst;
+			return dst;*/
+			return jalette.Lab.CIE76(a, b);
 		}
 		function dstToCenter(color) {
 			var center = new jalette.Lab(50, 0, 0);
@@ -506,6 +671,7 @@
 			return dstBetween(center, color);
 		}
 
+		// Browse the LAB space and find the color which have the greatest distance to the nearest color from the palette
 		var greatestDst = 0, greatestColor = null;
 		for (var L = 0; L < 100; L += 5) {
 			for (var i = 0; i < regionsPerRow; i++) {
@@ -550,36 +716,23 @@
 		return greatestColor;
 	}
 
+	/**
+	 * Generate a palette with a given number of colors.
+	 * @param  {Number} n The number of colors in the palette.
+	 * @return {Array}    An array of colors.
+	 */
 	jalette.generate = function (n) {
-		/*var canvas = document.createElement('canvas');
-		canvas.width = n * 20;
-		canvas.height = 20;
-		var ctx = canvas.getContext('2d');*/
-
-		var used = [];
+		var palette = [];
 		for (var i = 0; i < n; i++) {
-			var lab;
-			if (i == 0) {
-				lab = new jalette.Lab(0,0,0);
-			} else if (i == 1) {
-				lab = new jalette.Lab(100,0,0);
-			} else {
-				lab = jalette.generateColor(used);
-			}
+			var lab = jalette.generateColor(palette);
 
-			used.push(lab);
-
-			/*var rgb = lab.toRgb();
-			var rgbStr = 'rgb('+[Math.round(rgb.r),Math.round(rgb.g),Math.round(rgb.b)].join(',')+')';
-
-			ctx.fillStyle = rgbStr;
-			ctx.fillRect(i * 20, 0, 20, 20);*/
+			palette.push(lab);
 		}
-		//window.open(canvas.toDataURL());
 
-		return used;
+		return palette;
 	}
 
+	// Define Jalette if AMD is available
 	if (typeof define === 'function' && define.amd) {
 		define('jalette', [], function() {
 			return jalette;
