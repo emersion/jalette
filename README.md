@@ -17,4 +17,5 @@ References
 
 * CIELAB on Wikipedia - https://en.wikipedia.org/wiki/CIELAB
 * I want hue - http://tools.medialab.sciences-po.fr/iwanthue/
-
+* HSL, HSB and HSV - http://codeitdown.com/hsl-hsb-hsv-color/
+* ColorMine - https://github.com/THEjoezack/ColorMine/
