@@ -90,6 +90,13 @@
 			this.g = toRgb(this.g);
 			this.b = toRgb(this.b);
 			return this;
+		},
+		complementary: function () {
+			return new jalette.Rgb(
+				255 - this.r,
+				255 - this.g,
+				255 - this.b
+			);
 		}
 	};
 	/**
