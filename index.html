@@ -12,9 +12,9 @@
 			<h1>Jalette<small> - palette generation made easy</small></h1>
 		</header>
 
-		<div id="palette-steps" class="panel panel-primary">
+		<div id="palette" class="panel panel-primary">
 			<div class="panel-body">
-				<h2>Generating a palette</h2>
+				<h2>Generate a palette <small><span class="palette-n-val"></span> colors generated</small></h2>
 
 				<div id="colors-row"></div>
 
@@ -24,7 +24,9 @@
 						<div class="col-sm-2">
 							<input type="number" id="palette-n" class="form-control" placeholder="Number of colors">
 						</div>
-						<button type="button" id="palette-submit" class="btn btn-default">Generate</button>
+						<div class="col-sm-7">
+							<button type="button" id="palette-submit" class="btn btn-default">Generate</button>
+						</div>
 					</div>
 					<div class="form-group">
 						<label class="col-sm-3 control-label">Generate a new color for this palette</label>
@@ -34,11 +36,13 @@
 					</div>
 					<div class="form-group">
 						<label class="col-sm-3 control-label">Add a custom color</label>
-						<div class="col-sm-1">
+						<div class="col-md-1 col-sm-2 col-xs-3">
 							<input type="color" id="custom-color" class="form-control" placeholder="#000000">
 						</div>
-						<button type="button" id="custom-submit" class="btn btn-default">Add</button>
-						<button type="button" id="black-n-white-submit" class="btn btn-default">Add black &amp; white</button>
+						<div class="col-md-8 col-sm-7 col-xs-6">
+							<button type="button" id="custom-submit" class="btn btn-default">Add</button>
+							<button type="button" id="black-n-white-submit" class="btn btn-default">Add black &amp; white</button>
+						</div>
 					</div>
 				</form>
 
@@ -76,6 +80,9 @@
 			ctx.fillRect(0, canvas.height/2, canvas.width, 1);
 		}
 
+		function updatePaletteLength() {
+			$('#palette .palette-n-val').text(palette.length);
+		}
 		function appendColor(color) {
 			var paletteLength = palette.push(color);
 			var rgb = color.toRgb();
@@ -139,12 +146,15 @@
 					palette.splice(paletteLength - 1, 1);
 					$(this).remove();
 					$canvas.remove();
+					updatePaletteLength();
 				}).hover(function () {
 					$canvas.show();
 				}, function () {
 					$canvas.hide();
 				})
 			);
+
+			updatePaletteLength();
 		}
 		function generate(n) {
 			$colors.empty();
@@ -182,9 +192,9 @@
 
 		var $labSpaceCanvas = $('#lab-space-canvas'),
 			labSpaceCtx = $labSpaceCanvas[0].getContext('2d');
-		$('#lab-space-l').on('input', function () {
+		function renderLabSpace() {
 			var canvas = $labSpaceCanvas[0], ctx = labSpaceCtx;
-			var L = parseInt($(this).val());
+			var L = parseInt($('#lab-space-l').val());
 
 			function x(x) {
 				return x + canvas.width/2;
@@ -213,7 +223,14 @@
 			}
 
 			$('#lab-space .lab-space-l-val').text(L);
-		}).trigger('input');
+		}
+
+		$('#lab-space-l').on('input', function () {
+			renderLabSpace();
+		});
+
+		updatePaletteLength();
+		renderLabSpace();
 	</script>
 </body>
 </html>
