@@ -166,8 +166,12 @@
 		 */
 		toValid: function () {
 			function toRgb(n) {
-				if (n < 0) return 0;
-				if (n > 255) return 255;
+				if (n < 0) {
+					return 0;
+				}
+				if (n > 255) {
+					return 255;
+				}
 				return n;
 			}
 
@@ -235,9 +239,48 @@
 			return 'hsl('+cssVals.join(',')+')';
 		}
 	};
+	/**
+	 * Convert an RGB color to HSL.
+	 * @param  {jalette.Rgb} rgb The RGB color.
+	 * @return {jalette.Hsl}     The HSL color.
+	 * @see https://github.com/mjackson/mjijackson.github.com/blob/master/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript.txt
+	 * @todo Check if it is working!
+	 */
+	jalette.Hsl.fromRgb = function (rgb) {
+		var r = rgb.r / 255,
+			g = rgb.g / 255,
+			b = rgb.b / 255;
+
+		var max = Math.max(r, g, b),
+			min = Math.min(r, g, b);
+
+		var h, s, l = (max + min) / 2;
+
+		if (max == min) {
+			h = s = 0; // Achromatic
+		} else {
+			var d = max - min;
+			s = (l > 0.5) ? d / (2 - max - min) : d / (max + min);
+			switch (max) {
+				case r:
+					h = (g - b) / d + (g < b ? 6 : 0);
+					break;
+				case g:
+					h = (b - r) / d + 2;
+					break;
+				case b:
+					h = (r - g) / d + 4;
+					break;
+			}
+			h /= 6;
+		}
+
+		return new jalette.Hsl(h * 360, s, l);
+	};
 
 	/**
 	 * An HSV color.
+	 * HSB is exactly the same as HSV.
 	 * @param {Number} h The hue (between 0 and 360).
 	 * @param {Number} s The saturation (between 0 and 1).
 	 * @param {Number} v The value (between 0 and 1).
@@ -276,7 +319,7 @@
 			var range = Math.floor(hsb.h / 60.0) % 6;
 			var f = hsb.h / 60.0 - Math.floor(hsb.h / 60.0);
 
-			var v = hsb.b * 255.0;
+			var v = hsb.v * 255.0;
 			var p = v * (1 - hsb.s);
 			var q = v * (1 - f * hsb.s);
 			var t = v * (1 - (1 - f) * hsb.s);
@@ -304,25 +347,37 @@
 			return this.toHsl().toString();
 		}
 	};
-
 	/**
-	 * HSB is exactly the same as HSV.
-	 * The B in HSB stands for Brightness and the V in HSV for Value,
-	 * which are exactly the same: the perception of the ammount of
-	 * light or power of the source.
-	 * @param {Number} h The hue (between 0 and 360).
-	 * @param {Number} s The saturation (between 0 and 1).
-	 * @param {Number} b The brightness (between 0 and 1), which is the same as V in HSV.
-	 * @see http://codeitdown.com/hsl-hsb-hsv-color/
+	 * Convert an RGB color to HSV.
+	 * @param  {jalette.Rgb} rgb The RGB color.
+	 * @return {jalette.Hsv}     The HSV color.
+	 * @see https://github.com/mjackson/mjijackson.github.com/blob/master/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript.txt
 	 */
-	jalette.Hsb = function (h, s, b) {
-		this.h = h || 0;
-		this.s = s || 0;
-		this.b = b || 0;
+	jalette.Hsv.fromRgb = function (rgb) {
+		var r = rgb.r / 255.0,
+			g = rgb.g / 255.0,
+			b = rgb.b / 255.0;
 
-		this.v = b || 0; // Populate v too so as to make HSV methods work on this object too
+		var max = Math.max(r, g, b),
+			min = Math.min(r, g, b);
+		var h, s, v = max;
+
+		var d = max - min;
+		s = (max == 0) ? 0 : d / max;
+
+		if (max == min) {
+			h = 0; // achromatic
+		} else {
+			switch (max) {
+				case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+				case g: h = (b - r) / d + 2; break;
+				case b: h = (r - g) / d + 4; break;
+			}
+			h /= 6;
+		}
+
+		return new jalette.Hsv(h * 360, s, v);
 	};
-	jalette.Hsb.prototype = jalette.Hsv.prototype;
 
 	/**
 	 * An XYZ color.
@@ -531,19 +586,14 @@
 
 		var h_bar = Math.abs(h_prime_1 - h_prime_2);
 		var delta_h_prime;
-		if (C_prime_1 * C_prime_2 == 0) delta_h_prime = 0;
-		else
-		{
-			if (h_bar <= 180)
-			{
+		if (C_prime_1 * C_prime_2 == 0) {
+			delta_h_prime = 0;
+		} else {
+			if (h_bar <= 180) {
 				delta_h_prime = h_prime_2 - h_prime_1;
-			}
-			else if (h_bar > 180 && h_prime_2 <= h_prime_1)
-			{
+			} else if (h_bar > 180 && h_prime_2 <= h_prime_1) {
 				delta_h_prime = h_prime_2 - h_prime_1 + 360.0;
-			}
-			else
-			{
+			} else {
 				delta_h_prime = h_prime_2 - h_prime_1 - 360.0;
 			}
 		}
@@ -556,19 +606,14 @@
 		//Calculate h_prime_average
 
 		var h_prime_average;
-		if (C_prime_1 * C_prime_2 == 0) h_prime_average = 0;
-		else
-		{
-			if (h_bar <= 180)
-			{
+		if (C_prime_1 * C_prime_2 == 0) {
+			h_prime_average = 0;
+		} else {
+			if (h_bar <= 180) {
 				h_prime_average = (h_prime_1 + h_prime_2) / 2;
-			}
-			else if (h_bar > 180 && (h_prime_1 + h_prime_2) < 360)
-			{
+			} else if (h_bar > 180 && (h_prime_1 + h_prime_2) < 360) {
 				h_prime_average = (h_prime_1 + h_prime_2 + 360) / 2;
-			}
-			else
-			{
+			} else {
 				h_prime_average = (h_prime_1 + h_prime_2 - 360) / 2;
 			}
 		}
@@ -657,12 +702,6 @@
 			regionRadius = domainRadius*2 / regionsPerRow;
 
 		function dstBetween(a, b) {
-			/*var lFactor = domainRadius / 100 * 2; // L is between 0 and 100
-			var dst = Math.sqrt(Math.pow((a.l - b.l)*lFactor, 2) +
-				Math.pow(a.a - b.a, 2) +
-				Math.pow(a.b - b.b, 2));
-
-			return dst;*/
 			return jalette.Lab.CIE76(a, b);
 		}
 		function dstToCenter(color) {
