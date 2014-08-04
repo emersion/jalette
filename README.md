@@ -33,7 +33,8 @@ Static methods:
 * `jalette.generate(n)`: generate a new palette conmtaining `n` colors.
 * `jalette.from(input)`: convert anything to a color. Anything can be `#ffffff`, `rgb(42, 42, 42)` and so on.
 * `jalette.to(colorName, input)`: convert anything to a specific color. Anything can be another color, strings described above and so on.
-* `jalette.Lab.CIEDE2000(a, b)`: computes the distance (delta E) between two LAB colors.
+* `jalette.Lab.CIE76(a, b)`: computes the distance (delta E) between two LAB colors, using the [CIE76 formula](http://en.wikipedia.org/wiki/Color_difference#CIE76).
+* `jalette.Lab.CIEDE2000(a, b)`: computes the distance (delta E) between two LAB colors, using the [CIEDE2000 formula](http://en.wikipedia.org/wiki/Color_difference#CIEDE2000).
 
 License
 =======
