@@ -701,14 +701,14 @@
 			regionsPerRow = 64,
 			regionRadius = domainRadius*2 / regionsPerRow;
 
-		function dstBetween(a, b) {
+		/*function dstBetween(a, b) {
 			return jalette.Lab.CIE76(a, b);
 		}
 		function dstToCenter(color) {
 			var center = new jalette.Lab(50, 0, 0);
 
 			return dstBetween(center, color);
-		}
+		}*/
 
 		// Browse the LAB space and find the color which have the greatest distance to the nearest color from the palette
 		var greatestDst = 0, greatestColor = null;
@@ -736,6 +736,9 @@
 
 						if (smallestColorDst === -1 || dst < smallestColorDst) {
 							smallestColorDst = dst;
+						}
+						if (dst < greatestDst) {
+							break;
 						}
 					}
 
