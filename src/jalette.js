@@ -712,7 +712,7 @@
 
 		// Browse the LAB space and find the color which have the greatest distance to the nearest color from the palette
 		var greatestDst = 0, greatestColor = null;
-		for (var L = 0; L < 100; L += 5) {
+		for (var L = 80; L > 20; L -= 5) {
 			for (var i = 0; i < regionsPerRow; i++) {
 				for (var j = 0; j < regionsPerRow; j++) {
 					var xi = i * regionRadius - domainRadius,
